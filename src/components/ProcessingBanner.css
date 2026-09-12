@@ -1,0 +1,17 @@
+.processing-banner {
+  display: flex;
+  gap: 16px;
+  padding: 10px 32px;
+  background: rgba(124, 92, 255, 0.08);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+.processing-item {
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}

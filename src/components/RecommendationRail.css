@@ -1,0 +1,101 @@
+.recommendation-rail {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.recommendation-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: end;
+}
+
+.recommendation-header h2 {
+  margin: 0 0 6px;
+  font-size: 1.2rem;
+}
+
+.recommendation-meta {
+  display: flex;
+  gap: 14px;
+  white-space: nowrap;
+}
+
+.recommendation-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.recommendation-card {
+  display: grid;
+  grid-template-columns: 56px 1fr 28px;
+  gap: 14px;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  padding: 14px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(26, 26, 38, 0.95), rgba(18, 18, 26, 0.92));
+  border: 1px solid var(--border);
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+}
+
+.recommendation-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(124, 92, 255, 0.5);
+  background: linear-gradient(135deg, rgba(34, 34, 51, 0.96), rgba(18, 18, 26, 0.96));
+}
+
+.recommendation-artwork {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.recommendation-artwork img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.recommendation-content {
+  min-width: 0;
+}
+
+.recommendation-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.recommendation-score {
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.recommendation-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.recommendation-chip {
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(124, 92, 255, 0.14);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+}
+
+.recommendation-play {
+  color: var(--text-secondary);
+  display: grid;
+  place-items: center;
+}
+

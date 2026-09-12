@@ -1,0 +1,58 @@
+{
+  "name": "ai-powered-audio-player",
+  "version": "0.1.0",
+  "description": "Local-first AI-powered music player",
+  "main": "dist-electron/main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --configLoader native",
+    "build": "tsc -b && vite build --configLoader native && tsc -p tsconfig.electron.json",
+    "preview": "vite preview --configLoader native",
+    "electron:dev": "concurrently -k \"vite --configLoader native\" \"wait-on http://localhost:5173 && tsc -p tsconfig.electron.json && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
+    "electron:build": "npm run build && electron-builder",
+    "test:frontend": "vitest run --configLoader native",
+    "test:backend": "cd backend && python -m pytest",
+    "test": "npm run test:frontend && npm run test:backend"
+  },
+  "build": {
+    "appId": "com.aipowered.audioplayer",
+    "productName": "AI Audio Player",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "backend",
+        "to": "backend",
+        "filter": ["**/*", "!**/__pycache__/**", "!**/.pytest_cache/**", "!**/tests/**"]
+      }
+    ],
+    "win": {
+      "target": "nsis"
+    }
+  },
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.2",
+    "zustand": "^5.0.5",
+    "lucide-react": "^0.511.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.6",
+    "@types/react-dom": "^19.1.5",
+    "@vitejs/plugin-react": "^4.5.2",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^36.4.0",
+    "electron-builder": "^26.0.12",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vitest": "^3.2.3",
+    "wait-on": "^8.0.3"
+  }
+}
