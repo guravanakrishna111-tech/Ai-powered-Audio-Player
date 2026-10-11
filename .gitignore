@@ -20,3 +20,13 @@ coverage/
 *.log
 .DS_Store
 Thumbs.db
+
+# Local music & audio files
+Audio folder/
+*.mp3
+*.wav
+*.flac
+*.m4a
+*.aac
+*.ogg
+*.opus
