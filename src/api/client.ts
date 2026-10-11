@@ -15,6 +15,10 @@ export async function initApi(): Promise<void> {
   }
 }
 
+export function getBaseUrl(): string {
+  return baseUrl;
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${baseUrl}${path}`, {
     headers: { 'Content-Type': 'application/json', ...options?.headers },
@@ -46,10 +50,13 @@ export const api = {
   getRecommendations: (songId: number, limit = 5) =>
     request<RecommendationResponse>(`/api/recommendations/${songId}?limit=${limit}`),
   addFolder: (path: string) =>
-    request<{ ok: boolean }>('/api/folders', { method: 'POST', body: JSON.stringify({ path }) }),
+    request<{ ok: boolean; added_path?: string; folders: { id: number; path: string; enabled: number }[] }>('/api/folders', { method: 'POST', body: JSON.stringify({ path }) }),
   getFolders: () => request<{ folders: { id: number; path: string; enabled: number }[] }>('/api/folders'),
   removeFolder: (id: number) => request<{ ok: boolean }>(`/api/folders/${id}`, { method: 'DELETE' }),
   triggerScan: () => request<{ ok: boolean }>('/api/scan', { method: 'POST' }),
+  scanWorkspace: () => request<{ ok: boolean; added: string[]; folders: { id: number; path: string; enabled: number }[] }>('/api/scan/workspace', { method: 'POST' }),
+  trainModel: () => request<{ ok: boolean; message: string }>('/api/processing/train', { method: 'POST' }),
+  startProcessing: () => request<{ ok: boolean; is_running: boolean }>('/api/processing/start', { method: 'POST' }),
   getScanProgress: () => request<ScanProgress>('/api/scan/progress'),
   getProcessingProgress: () => request<ProcessingProgress>('/api/processing/progress'),
   getSettings: () => request<Record<string, unknown>>('/api/settings'),
@@ -59,16 +66,25 @@ export const api = {
   resetDatabase: () => request<{ ok: boolean }>('/api/settings/reset-database', { method: 'POST' }),
 };
 
-export async function toPlayableUrl(filePath: string): Promise<string> {
+export async function toPlayableUrl(filePath: string, songId?: number): Promise<string> {
+  // 1. Direct FastAPI audio streaming with range request support
+  if (songId) {
+    return `${baseUrl}/api/songs/${songId}/stream`;
+  }
+  // 2. Electron local-audio scheme
   if (window.electronAPI?.toAudioUrl) {
     return window.electronAPI.toAudioUrl(filePath);
   }
+  // 3. Fallback
   return `file://${filePath}`;
 }
 
-export async function toArtworkUrl(filePath: string): Promise<string> {
-  if (window.electronAPI?.toFileUrl) {
+export async function toArtworkUrl(filePath?: string | null, songId?: number): Promise<string> {
+  if (songId) {
+    return `${baseUrl}/api/songs/${songId}/artwork`;
+  }
+  if (filePath && window.electronAPI?.toFileUrl) {
     return window.electronAPI.toFileUrl(filePath);
   }
-  return `file://${filePath}`;
+  return filePath ? `file://${filePath}` : '';
 }

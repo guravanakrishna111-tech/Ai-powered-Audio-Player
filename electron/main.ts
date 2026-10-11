@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, protocol } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, protocol, net } from 'electron';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { BackendManager } from './backend-manager.js';
@@ -54,7 +54,7 @@ function createWindow() {
 app.whenReady().then(async () => {
   protocol.handle('local-audio', (request) => {
     const filePath = decodeURIComponent(request.url.replace('local-audio://', ''));
-    return fetch(pathToFileURL(filePath).href);
+    return net.fetch(pathToFileURL(filePath).href);
   });
 
   await backend.start();

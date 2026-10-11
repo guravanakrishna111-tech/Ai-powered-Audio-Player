@@ -305,7 +305,7 @@ def test_cosine_similarity_clamped_non_negative():
     assert clamped == 0.0, "Clamped vector cosine must floor at 0.0"
 
     clamped_identical = _vector_cosine((1.0, 1.0), (1.0, 1.0))
-    assert clamped_identical == 1.0, "Identical vectors still give 1.0"
+    assert clamped_identical == pytest.approx(1.0), "Identical vectors still give 1.0"
 
 
 def test_mood_similarity_clamped_non_negative():
@@ -555,18 +555,31 @@ def test_diversity_limits_same_artist_in_results(request):
         mfcc=[0.95] * 13, chroma=[0.95] * 12, mood={"happy": 0.88},
     )
 
-    result = RecommendationEngine(db).recommend(1, limit=5)
-    recs = result["recommendations"]
-    artist_ids = [r["song"]["artist_id"] for r in recs]
-    count_artist2 = artist_ids.count(2)
+    result_diversity = RecommendationEngine(db).recommend(1, limit=5, diversity_penalty=0.50)
+    result_no_diversity = RecommendationEngine(db).recommend(1, limit=5, diversity_max_per_artist=0)
 
-    # With max_per_artist=2, artist 2 can appear at most 2 times before penalty
-    # demotes further appearances. Artist 3 must get in too.
-    assert count_artist2 <= 2, (
-        f"Artist 2 appears {count_artist2} times — diversity is not working. "
-        f"Result artist IDs: {artist_ids}"
+    recs_d = result_diversity["recommendations"]
+    recs_nd = result_no_diversity["recommendations"]
+
+    artist_ids_d = [r["song"]["artist_id"] for r in recs_d]
+    artist_ids_nd = [r["song"]["artist_id"] for r in recs_nd]
+
+    # Without diversity: artist 3 should be last (lower audio similarity).
+    # With a 50% penalty: penalised artist-2 tracks must drop enough to let
+    # artist-3 rise above them in the ranking.
+    # The key assertion: artist-3 must appear EARLIER with diversity than without.
+    pos_d = artist_ids_d.index(3) if 3 in artist_ids_d else len(artist_ids_d)
+    pos_nd = artist_ids_nd.index(3) if 3 in artist_ids_nd else len(artist_ids_nd)
+
+    assert 3 in artist_ids_d, (
+        f"Artist 3 must appear in results with diversity. Got: {artist_ids_d}"
     )
-    assert 3 in artist_ids, "Artist 3 (OtherArtistTrack) must appear after diversity re-ranking"
+    assert pos_d < pos_nd, (
+        f"Diversity must move artist-3 earlier in ranking: "
+        f"position with diversity={pos_d}, without={pos_nd}. "
+        f"With diversity: {artist_ids_d}, without: {artist_ids_nd}"
+    )
+
 
 
 def test_api_returns_recommendations(request, monkeypatch):

@@ -49,7 +49,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
       return;
     }
     const song = songs[index];
-    const url = await toPlayableUrl(song.file_path);
+    const url = await toPlayableUrl(song.file_path, song.id);
     set({ queue: songs, queueIndex: index, currentSong: song, audioUrl: url, isPlaying: true, currentTime: 0 });
     void api.recordPlay(song.id);
   },
@@ -86,7 +86,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     }
 
     const song = queue[nextIndex];
-    const url = await toPlayableUrl(song.file_path);
+    const url = await toPlayableUrl(song.file_path, song.id);
     set({ queueIndex: nextIndex, currentSong: song, audioUrl: url, isPlaying: true, currentTime: 0 });
     void api.recordPlay(song.id);
   },
@@ -102,7 +102,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
     const prevIndex = queueIndex > 0 ? queueIndex - 1 : queue.length - 1;
     const song = queue[prevIndex];
-    const url = await toPlayableUrl(song.file_path);
+    const url = await toPlayableUrl(song.file_path, song.id);
     set({ queueIndex: prevIndex, currentSong: song, audioUrl: url, isPlaying: true, currentTime: 0 });
     void api.recordPlay(song.id);
   },

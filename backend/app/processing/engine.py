@@ -35,6 +35,7 @@ class ProcessingEngine:
         while not self._stop_event.is_set():
             job = self._claim_job()
             if not job:
+                self._ensure_model_trained()
                 time.sleep(1.0)
                 continue
             try:
@@ -43,6 +44,41 @@ class ProcessingEngine:
             except Exception as exc:
                 logger.exception("Job %s failed", job["id"])
                 self._fail_job(job["id"], str(exc))
+
+    def _ensure_model_trained(self) -> None:
+        try:
+            from app.recommendation.normalization import RecommendationNormalizer
+            norm = RecommendationNormalizer(self.db)
+            state = norm.load()
+            if norm._is_stale(state):
+                new_state = norm.fit()
+                norm.save(new_state)
+                logger.info("Auto-updated recommender normalization model (%d songs)", new_state.analyzed_song_count)
+        except Exception as exc:
+            logger.debug("Failed auto-training model: %s", exc)
+
+    def train_now(self) -> dict:
+        """Process all queued jobs and update recommender normalizer."""
+        processed = 0
+        while True:
+            job = self._claim_job()
+            if not job:
+                break
+            try:
+                self._process_job(job)
+                self._complete_job(job["id"])
+                processed += 1
+            except Exception as exc:
+                self._fail_job(job["id"], str(exc))
+        from app.recommendation.normalization import RecommendationNormalizer
+        norm = RecommendationNormalizer(self.db)
+        state = norm.fit()
+        norm.save(state)
+        return {
+            "processed_jobs": processed,
+            "analyzed_song_count": state.analyzed_song_count,
+            "version": state.version,
+        }
 
     def _claim_job(self) -> dict | None:
         row = self.db.fetchone(

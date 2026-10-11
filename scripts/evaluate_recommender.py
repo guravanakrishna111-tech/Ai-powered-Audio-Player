@@ -138,11 +138,11 @@ def _run_config(engine, song_ids: list[int], limit: int, label: str) -> dict:
 
 
 def _print_report(stats: dict, config_a: dict, config_b: dict) -> None:
-    sep = "─" * 60
+    sep = "-" * 60
 
-    print(f"\n{'═' * 60}")
-    print("  AI AUDIO PLAYER — Recommender Evaluation Report")
-    print(f"{'═' * 60}\n")
+    print(f"\n{'=' * 60}")
+    print("  AI AUDIO PLAYER -- Recommender Evaluation Report")
+    print(f"{'=' * 60}\n")
 
     print("Library Statistics")
     print(sep)
@@ -154,8 +154,8 @@ def _print_report(stats: dict, config_a: dict, config_b: dict) -> None:
     print("Feature Availability (fraction of analyzed songs with each feature)")
     print(sep)
     for feat, frac in stats["feature_availability"].items():
-        bar = "█" * int(frac * 20) + "░" * (20 - int(frac * 20))
-        print(f"  {feat:<28} {bar} {frac * 100:.0f}%")
+        bar = "#" * int(frac * 20) + "-" * (20 - int(frac * 20))
+        print(f"  {feat:<28} [{bar}] {frac * 100:.0f}%")
     print()
 
     for cfg in (config_a, config_b):
@@ -174,10 +174,10 @@ def _print_report(stats: dict, config_a: dict, config_b: dict) -> None:
 
     print("Comparison Notes")
     print(sep)
-    print("  Score difference (Config B − Config A, top-1 mean):",
+    print("  Score difference (Config B - Config A, top-1 mean):",
           round(config_b["scores"]["mean_top1"] - config_a["scores"]["mean_top1"], 4))
     print()
-    print("  ⚠  Score differences do not imply quality differences.")
+    print("  [Note] Score differences do not imply quality differences.")
     print("     Config B uses more signals, so scores may be lower when")
     print("     metadata signals disagree with audio signals.")
     print("     Ground-truth quality requires human ratings or play-history data.")
@@ -188,7 +188,7 @@ def _print_report(stats: dict, config_a: dict, config_b: dict) -> None:
     print("  This is a content-based baseline. It does not learn preferences.")
     print("  Mood is a heuristic estimate, not a trained classifier.")
     print("  Language metadata may be absent for many local libraries.")
-    print(f"\n{'═' * 60}\n")
+    print(f"\n{'=' * 60}\n")
 
 
 def main() -> None:
@@ -257,20 +257,20 @@ def main() -> None:
         print("Need at least 2 analyzed songs to generate recommendations.")
         sys.exit(0)
 
-    print(f"Sampling {len(song_ids)} songs for evaluation (limit={args.limit})…\n")
+    print(f"Sampling {len(song_ids)} songs for evaluation (limit={args.limit})...\n")
 
-    # ── Config A: audio-only ──────────────────────────────────────────────
+    # -- Config A: audio-only ----------------------------------------------
     audio_only_weights = RecommendationWeights(
         audio=1.0, mood=0.0, genre=0.0, artist=0.0,
         language=0.0, album=0.0, other=0.0,
     )
     engine_a = RecommendationEngine(db, weights=audio_only_weights)
-    print("Running Config A (audio-only)…")
+    print("Running Config A (audio-only)...")
     config_a = _run_config(engine_a, song_ids, args.limit, "Config A: audio-only")
 
-    # ── Config B: default multi-signal ───────────────────────────────────
+    # -- Config B: default multi-signal -----------------------------------
     engine_b = RecommendationEngine(db)  # uses DEFAULT_WEIGHTS
-    print("Running Config B (multi-signal default)…")
+    print("Running Config B (multi-signal default)...")
     config_b = _run_config(engine_b, song_ids, args.limit, "Config B: multi-signal (default)")
 
     _print_report(stats, config_a, config_b)

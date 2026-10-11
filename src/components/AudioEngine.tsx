@@ -14,15 +14,26 @@ export function AudioEngine() {
     onTrackEnded,
   } = usePlayerStore();
 
+  // Play / pause handling when audioUrl or isPlaying changes
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    if (isPlaying) {
-      void audio.play().catch(() => setIsPlaying(false));
+
+    if (isPlaying && audioUrl) {
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err: any) => {
+          // Ignore AbortError caused by rapid track switching or source reload
+          if (err?.name !== 'AbortError') {
+            console.warn('Playback error caught:', err);
+            setIsPlaying(false);
+          }
+        });
+      }
     } else {
       audio.pause();
     }
-  }, [isPlaying, audioUrl, setIsPlaying]);
+  }, [audioUrl, isPlaying, setIsPlaying]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -40,11 +51,18 @@ export function AudioEngine() {
     <audio
       ref={audioRef}
       src={audioUrl ?? undefined}
+      preload="auto"
       onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
       onLoadedMetadata={(e) => setDuration(e.currentTarget.duration || 0)}
       onEnded={() => void onTrackEnded()}
       onPlay={() => setIsPlaying(true)}
       onPause={() => setIsPlaying(false)}
+      onError={(e) => {
+        const err = e.currentTarget.error;
+        if (err) {
+          console.warn('Audio element error code:', err.code, err.message);
+        }
+      }}
     />
   );
 }
