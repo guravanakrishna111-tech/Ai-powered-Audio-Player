@@ -3,10 +3,25 @@ from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+def _resolve_default_data_dir() -> Path:
+    # 1. Prefer project backend/data directory where database & analysis are stored
+    project_data = Path(__file__).resolve().parent.parent / "data"
+    if project_data.is_dir():
+        return project_data
+    # 2. User home fallback
+    home_data = Path.home() / ".ai-audio-player" / "data"
+    try:
+        home_data.mkdir(parents=True, exist_ok=True)
+        return home_data
+    except Exception:
+        project_data.mkdir(parents=True, exist_ok=True)
+        return project_data
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="AAP_")
 
-    data_dir: Path = Path.home() / ".ai-audio-player" / "data"
+    data_dir: Path = _resolve_default_data_dir()
     db_name: str = "library.db"
     supported_extensions: tuple[str, ...] = (
         ".mp3", ".flac", ".wav", ".m4a", ".aac", ".ogg", ".opus"

@@ -38,7 +38,7 @@ def get_song(song_id: int) -> dict:
 
 @router.get("/songs/{song_id}/stream")
 def stream_song(song_id: int):
-    """Stream audio file for a song with HTTP Range request support."""
+    """Stream audio file with HTTP Range request support and inline playback disposition."""
     song = repo.get_song(song_id)
     if not song:
         raise HTTPException(status_code=404, detail="Song not found")
@@ -59,12 +59,14 @@ def stream_song(song_id: int):
             ".ogg": "audio/ogg",
             ".opus": "audio/ogg",
         }
-        mime_type = mime_map.get(suffix, "application/octet-stream")
+        mime_type = mime_map.get(suffix, "audio/mpeg")
 
     return FileResponse(
         path=file_path,
         media_type=mime_type,
         filename=file_path.name,
+        content_disposition_type="inline",
+        headers={"Accept-Ranges": "bytes"},
     )
 
 

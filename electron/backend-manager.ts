@@ -71,6 +71,13 @@ export class BackendManager {
   }
 
   private getDataDir(): string {
+    if (process.env.AAP_DATA_DIR) {
+      return process.env.AAP_DATA_DIR;
+    }
+    const devPath = path.join(__dirname, '..', 'backend', 'data');
+    if (fs.existsSync(devPath)) {
+      return devPath;
+    }
     return path.join(app.getPath('userData'), 'data');
   }
 

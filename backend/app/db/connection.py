@@ -7,8 +7,8 @@ from app.config import settings
 
 
 class Database:
-    def __init__(self, db_path: Path | None = None) -> None:
-        self.db_path = db_path or settings.db_path
+    def __init__(self, db_path: Path | str | None = None) -> None:
+        self.db_path = Path(db_path) if db_path is not None else settings.db_path
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         settings.artwork_dir.mkdir(parents=True, exist_ok=True)
         settings.cache_dir.mkdir(parents=True, exist_ok=True)

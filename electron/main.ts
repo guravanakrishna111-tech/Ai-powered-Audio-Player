@@ -3,6 +3,8 @@ import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { BackendManager } from './backend-manager.js';
 
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
